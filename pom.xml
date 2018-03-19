@@ -23,16 +23,53 @@
          xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
   <modelVersion>4.0.0</modelVersion>
-  <parent>
-    <artifactId>dataio-commons-utils</artifactId>
-    <groupId>dk.dbc</groupId>
-    <version>1.0-SNAPSHOT</version>
-  </parent>
+  <groupId>dk.dbc</groupId>
+  <artifactId>httpclient</artifactId>
+  <packaging>jar</packaging>
+  <version>0.1.0</version>
 
-  <artifactId>dataio-commons-utils-httpclient</artifactId>
-  <name>dataio-commons-utils-httpclient</name>
+  <properties>
+    <dbc-commons.version>1.3-SNAPSHOT</dbc-commons.version>
+    <hamcrest.version>1.3</hamcrest.version>
+    <jersey.version>2.22.2</jersey.version>
+    <jodah.version>1.0.3</jodah.version>
+    <junit.version>4.12</junit.version>
+    <mockito.version>2.16.0</mockito.version>
+  </properties>
+
+  <build>
+    <finalName>httpclient</finalName>
+    <plugins>
+      <plugin>
+        <groupId>org.apache.maven.plugins</groupId>
+        <artifactId>maven-compiler-plugin</artifactId>
+        <configuration>
+          <source>1.8</source>
+          <target>1.8</target>
+        </configuration>
+      </plugin>
+    </plugins>
+  </build>
 
   <dependencies>
+    <dependency>
+      <groupId>org.mockito</groupId>
+      <artifactId>mockito-core</artifactId>
+      <version>${mockito.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>org.hamcrest</groupId>
+      <artifactId>hamcrest-all</artifactId>
+      <version>${hamcrest.version}</version>
+      <scope>test</scope>
+    </dependency>
+    <dependency>
+      <groupId>junit</groupId>
+      <artifactId>junit</artifactId>
+      <version>${junit.version}</version>
+      <scope>test</scope>
+    </dependency>
     <dependency>
 	    <groupId>org.glassfish.jersey.core</groupId>
 	    <artifactId>jersey-client</artifactId>
@@ -41,17 +78,19 @@
     </dependency>
     <dependency>
       <groupId>dk.dbc</groupId>
-      <artifactId>dataio-commons-utils-invariant</artifactId>
-      <version>${project.version}</version>
+      <artifactId>invariant-utils</artifactId>
+      <version>0.1.0</version>
     </dependency>
     <dependency>
       <groupId>dk.dbc</groupId>
       <artifactId>dbc-commons-testutil-assert</artifactId>
+      <version>${dbc-commons.version}</version>
       <scope>test</scope>
     </dependency>
     <dependency>
       <groupId>net.jodah</groupId>
       <artifactId>failsafe</artifactId>
+      <version>${jodah.version}</version>
     </dependency>
   </dependencies>
 </project>

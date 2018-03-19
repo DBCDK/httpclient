@@ -21,7 +21,7 @@
 
 package dk.dbc.dataio.commons.utils.httpclient;
 
-import dk.dbc.dataio.commons.utils.invariant.InvariantUtil;
+import dk.dbc.invariant.InvariantUtil;
 import org.glassfish.jersey.client.ClientConfig;
 
 import javax.ws.rs.ProcessingException;
