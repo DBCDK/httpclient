@@ -19,37 +19,39 @@
  * along with DataIO.  If not, see <http://www.gnu.org/licenses/>.
  */
 
-package dk.dbc.dataio.commons.utils.httpclient;
+package dk.dbc.httpclient;
 
 import javax.ws.rs.core.Response;
 import java.util.Arrays;
 
 /**
- * HTTP DELETE request representation
+ * HTTP GET request representation
  *
  * <p>
  * Example:
  * <pre>
  * {@code
- * final HttpDelete httpDelete = new HttpDelete(client)
+ * final HttpGet httpGet = new HttpGet(client)
  *          .withBaseUrl("http://localhost:8080")
- *          .withPathElements("path", "to", "resource");
+ *          .withPathElements("path", "to", "resource")
+ *          .withQueryParameter("key", "value")
+ *          .withHeader("Accept", "text/html");
  * }
  * </pre>
  */
-public class HttpDelete extends HttpRequest<HttpDelete> {
-    public HttpDelete(HttpClient httpClient) {
+public class HttpGet extends HttpRequest<HttpGet> {
+    public HttpGet(HttpClient httpClient) {
         super(httpClient);
     }
 
     @Override
     public Response call() {
-        return HttpClient.doDelete(this);
+        return HttpClient.doGet(this);
     }
 
     @Override
     public String toString() {
-        return "HttpDelete{" +
+        return "HttpGet{" +
                 "headers=" + headers +
                 ", queryParameters=" + queryParameters +
                 ", baseUrl='" + baseUrl + '\'' +
