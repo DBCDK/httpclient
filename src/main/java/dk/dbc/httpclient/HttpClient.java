@@ -76,7 +76,9 @@ public class HttpClient {
         WebTarget target = httpGet.getHttpClient().getClient().target(httpGet.getBaseUrl());
         target = setPathParametersOnWebTarget(httpGet.getPathElements(), target);
         target = setQueryParametersOnWebTarget(httpGet.queryParameters, target);
-        return target.request().get();
+        Invocation.Builder request = target.request();
+        setHeadersOnRequest(httpGet.getHeaders(), request);
+        return request.get();
     }
 
     /**
