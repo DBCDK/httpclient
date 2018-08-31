@@ -26,7 +26,7 @@
   <groupId>dk.dbc</groupId>
   <artifactId>httpclient</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.0</version>
+  <version>0.1.1</version>
 
   <properties>
     <dbc-commons.version>1.3-SNAPSHOT</dbc-commons.version>
