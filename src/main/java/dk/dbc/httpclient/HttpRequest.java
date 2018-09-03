@@ -37,7 +37,7 @@ public abstract class HttpRequest<T extends HttpRequest<T>> implements Callable<
     protected final Map<String, String> headers = new HashMap<>();
     protected final Map<String, Object> queryParameters = new HashMap<>();
     protected String baseUrl;
-    protected String[] pathElements = new String[] {"/"};
+    protected String[] pathElements = new String[] {};
 
     public HttpRequest(HttpClient httpClient) {
         this.httpClient = httpClient;

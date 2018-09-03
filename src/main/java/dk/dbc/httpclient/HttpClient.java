@@ -160,7 +160,7 @@ public class HttpClient {
         }
     }
 
-    private static WebTarget setPathParametersOnWebTarget(String[] pathElements, WebTarget target) {
+    static WebTarget setPathParametersOnWebTarget(String[] pathElements, WebTarget target) {
         for (String pathElement : pathElements) {
             target = target.path(pathElement);
         }
