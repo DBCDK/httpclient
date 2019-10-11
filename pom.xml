@@ -26,12 +26,12 @@
   <groupId>dk.dbc</groupId>
   <artifactId>httpclient</artifactId>
   <packaging>jar</packaging>
-  <version>0.1.1</version>
+  <version>0.2</version>
 
   <properties>
     <dbc-commons.version>1.3-SNAPSHOT</dbc-commons.version>
     <hamcrest.version>1.3</hamcrest.version>
-    <jersey.version>2.22.2</jersey.version>
+    <jersey.version>2.27</jersey.version>
     <jodah.version>1.0.3</jodah.version>
     <junit.version>4.12</junit.version>
     <mockito.version>2.16.0</mockito.version>

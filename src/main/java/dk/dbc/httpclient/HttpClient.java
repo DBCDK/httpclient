@@ -96,6 +96,20 @@ public class HttpClient {
     }
 
     /**
+     * Executes given HTTP PUT request
+     * @param httpPut request
+     * @return server response
+     */
+    public static Response doPut(HttpPut httpPut) {
+        WebTarget target = httpPut.getHttpClient().getClient().target(httpPut.getBaseUrl());
+        target = setPathParametersOnWebTarget(httpPut.getPathElements(), target);
+        target = setQueryParametersOnWebTarget(httpPut.getQueryParameters(), target);
+        Invocation.Builder request = target.request();
+        setHeadersOnRequest(httpPut.getHeaders(), request);
+        return request.put(httpPut.getEntity());
+    }
+
+    /**
      * Executes given HTTP DELETE request
      * @param httpDelete request
      * @return server response
