@@ -42,10 +42,10 @@ public class PathBuilderTest {
 
     @Test
     public void pathBuilder_whenValuesMatchPathVariables_returnsInterpolatedPath() {
-        final String expectedPath = "val1/test/val2/val1/test/val2";
+        final String expectedPath = "%2F%3Fval1/test/%24val2/%2F%3Fval1/test/%24val2";
         final PathBuilder pathBuilder = new PathBuilder(PATH_TEMPLATE);
-        pathBuilder.bind("id1", "val1");
-        pathBuilder.bind("id2", "val2");
+        pathBuilder.bind("id1", "/?val1");
+        pathBuilder.bind("id2", "$val2");
         assertThat(pathBuilder.build(), is(expectedPath.split(PathBuilder.PATH_SEPARATOR)));
     }
 }

@@ -23,6 +23,9 @@ package dk.dbc.httpclient;
 
 import dk.dbc.invariant.InvariantUtil;
 
+import java.io.UnsupportedEncodingException;
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -53,7 +56,7 @@ public class PathBuilder {
      * @return this path builder
      */
     public PathBuilder bind(String variableName, String value) {
-        variables.put(variableName, value);
+        variables.put(variableName, urlEncode(value));
         return this;
     }
 
@@ -79,5 +82,13 @@ public class PathBuilder {
             path = path.replaceAll(String.format("\\{%s\\}", entry.getKey()), entry.getValue());
         }
         return path.split(PATH_SEPARATOR);
+    }
+
+    private static String urlEncode(String s) {
+        try {
+            return URLEncoder.encode(s, StandardCharsets.UTF_8.name());
+        } catch (UnsupportedEncodingException e) {
+            throw new IllegalStateException(e);
+        }
     }
 }
