@@ -10,8 +10,8 @@ import org.junit.Test;
 
 import javax.ws.rs.ProcessingException;
 import javax.ws.rs.client.Client;
-import java.util.Collections;
-import java.util.concurrent.TimeUnit;
+import javax.ws.rs.core.Response;
+import java.time.Duration;
 
 import static dk.dbc.commons.testutil.Assert.assertThat;
 import static dk.dbc.commons.testutil.Assert.isThrowing;
@@ -28,9 +28,10 @@ public class FailSafeHttpClientTest {
         final Client client = mock(Client.class);
         when(client.target(baseurl)).thenThrow(new ProcessingException("err"));
 
-        final RetryPolicy retryPolicy = new RetryPolicy()
-                .retryOn(Collections.singletonList(ProcessingException.class))
-                .withDelay(1, TimeUnit.MILLISECONDS)
+        final RetryPolicy<Response> retryPolicy = new RetryPolicy<Response>()
+                .handle(ProcessingException.class)
+                .handleResultIf(response -> response.getStatus() == 404 || response.getStatus() == 500)
+                .withDelay(Duration.ofMillis(1))
                 .withMaxRetries(numberOfRetries);
 
         final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, retryPolicy);
