@@ -21,10 +21,10 @@ import javax.ws.rs.core.Response;
  * {@code
  *
  * final Client client = HttpClient.newClient();
- * final RetryPolicy retryPolicy = new RetryPolicy()
- *          .retryOn(Collections.singletonList(ProcessingException.class))
- *          .retryIf((Response response) -> response.getStatus() == 404 || response.getStatus() == 500)
- *          .withDelay(1, TimeUnit.SECONDS)
+ * final RetryPolicy<Response> retryPolicy = new RetryPolicy<Response>()
+ *          .handle(ProcessingException.class)
+ *          .handleResultIf(response -> response.getStatus() == 404 || response.getStatus() == 500)
+ *          .withDelay(Duration.ofSeconds(1))
  *          .withMaxRetries(3);
  *
  * final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, retryPolicy);
@@ -38,25 +38,22 @@ import javax.ws.rs.core.Response;
  * </pre>
  */
 public class FailSafeHttpClient extends HttpClient {
-    private final RetryPolicy retryPolicy;
+    private final RetryPolicy<Response> retryPolicy;
 
-    public static FailSafeHttpClient create(Client httpClient, RetryPolicy retryPolicy) throws NullPointerException {
+    public static FailSafeHttpClient create(Client httpClient, RetryPolicy<Response> retryPolicy) throws NullPointerException {
         return new FailSafeHttpClient(httpClient, retryPolicy);
     }
 
-    private FailSafeHttpClient(Client client, RetryPolicy retryPolicy) throws NullPointerException {
+    private FailSafeHttpClient(Client client, RetryPolicy<Response> retryPolicy) throws NullPointerException {
         super(client);
         this.retryPolicy = InvariantUtil.checkNotNullOrThrow(retryPolicy, "retryPolicy");
+        this.retryPolicy.onRetry(response -> {
+            if (response != null && response.getLastResult() != null) response.getLastResult().close();
+        });
     }
 
     @Override
     public Response execute(HttpRequest<? extends HttpRequest> request) {
-        return Failsafe.with(retryPolicy)
-                // To ensure no leaking connections
-                .onRetry((response, failure) -> {
-                    if (response != null)
-                        ((Response) response).close();
-                })
-                .get(request);
+        return Failsafe.with(retryPolicy).get(() -> super.execute(request));
     }
 }
