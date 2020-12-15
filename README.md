@@ -13,7 +13,7 @@ Add the dependency to your Maven pom.xml
 <dependency>
   <groupId>dk.dbc</groupId>
   <artifactId>dbc-commons-httpclient</artifactId>
-  <version>1.0-SNAPSHOT</version>
+  <version>1.1-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -85,11 +85,11 @@ try (final Response response = new HttpDelete(httpClient)
 HTTP requests can also be executed in a fail-safe manner with automatic retry functionality.
 
 ```java
-RetryPolicy retryPolicy = new RetryPolicy()
-            .retryOn(Collections.singletonList(ProcessingException.class))
-            .retryIf((Response response) -> response.getStatus() == 404 || response.getStatus() == 500)
-            .withDelay(1, TimeUnit.SECONDS)
-            .withMaxRetries(3);
+final RetryPolicy<Response> retryPolicy = new RetryPolicy<Response>()
+        .handle(ProcessingException.class)
+        .handleResultIf(response -> response.getStatus() == 404 || response.getStatus() == 500)
+        .withDelay(Duration.ofSeconds(1))
+        .withMaxRetries(3);
 
 final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(HttpClient.newClient(), retryPolicy);
 
