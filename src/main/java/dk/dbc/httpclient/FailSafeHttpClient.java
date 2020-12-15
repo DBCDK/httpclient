@@ -41,15 +41,23 @@ public class FailSafeHttpClient extends HttpClient {
     private final RetryPolicy<Response> retryPolicy;
 
     public static FailSafeHttpClient create(Client httpClient, RetryPolicy<Response> retryPolicy) throws NullPointerException {
-        return new FailSafeHttpClient(httpClient, retryPolicy);
+        return new FailSafeHttpClient(httpClient, retryPolicy, true);
     }
 
-    private FailSafeHttpClient(Client client, RetryPolicy<Response> retryPolicy) throws NullPointerException {
+    public static FailSafeHttpClient create(Client httpClient, RetryPolicy<Response> retryPolicy,
+                                            boolean overrideOnRetry) throws NullPointerException {
+        return new FailSafeHttpClient(httpClient, retryPolicy, overrideOnRetry);
+    }
+
+    private FailSafeHttpClient(Client client, RetryPolicy<Response> retryPolicy, boolean overrideOnRetry)
+            throws NullPointerException {
         super(client);
         this.retryPolicy = InvariantUtil.checkNotNullOrThrow(retryPolicy, "retryPolicy");
-        this.retryPolicy.onRetry(response -> {
-            if (response != null && response.getLastResult() != null) response.getLastResult().close();
-        });
+        if (overrideOnRetry) {
+            this.retryPolicy.onRetry(response -> {
+                if (response != null && response.getLastResult() != null) response.getLastResult().close();
+            });
+        }
     }
 
     @Override

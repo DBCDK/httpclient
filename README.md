@@ -84,7 +84,8 @@ try (final Response response = new HttpDelete(httpClient)
 
 HTTP requests can also be executed in a fail-safe manner with automatic retry functionality.
 
-Note that the FailSafeHttpClient will forcibly override a RetryPolicy.onRetry() listener set by the client.
+Note that the FailSafeHttpClient will forcibly override a RetryPolicy.onRetry() listener set by the client, 
+unless the three argument create() method is used with the overrideOnRetry flag set to false.
 
 ```java
 final RetryPolicy<Response> retryPolicy = new RetryPolicy<Response>()
