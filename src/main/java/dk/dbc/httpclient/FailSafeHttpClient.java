@@ -62,6 +62,6 @@ public class FailSafeHttpClient extends HttpClient {
 
     @Override
     public Response execute(HttpRequest<? extends HttpRequest> request) {
-        return Failsafe.with(retryPolicy).get(() -> super.execute(request));
+        return Failsafe.with(retryPolicy).get(request::call);
     }
 }
