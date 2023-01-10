@@ -1,21 +1,17 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
- */
-
 package dk.dbc.httpclient;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
 import static org.hamcrest.CoreMatchers.is;
-import static org.junit.Assert.assertThat;
+import static org.hamcrest.MatcherAssert.assertThat;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 public class PathBuilderTest {
     private static final String PATH_TEMPLATE = "{id1}/test/{id2}/{id1}/test/{id2}";
 
-    @Test(expected = NullPointerException.class)
+    @Test
     public void constructor_pathTemplateArgIsNull_throws() {
-        new PathBuilder(null);
+        assertThrows(NullPointerException.class, () -> new PathBuilder(null));
     }
 
     @Test

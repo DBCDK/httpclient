@@ -126,9 +126,9 @@ try (final Response response = new HttpGet(httpClient)
 
 **Requirements**
 
-To build this project JDK 1.8 or higher and Apache Maven are required.
+To build this project JDK 11 or higher and Apache Maven are required.
 
 ### License
-
-Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3.
+                                             
+Copyright © 2018-2023 [DBC Digital A/S](http://www.dbc.dk)
 See license text in LICENSE.txt
