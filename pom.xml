@@ -14,9 +14,16 @@
   <parent>
     <groupId>dk.dbc</groupId>
     <artifactId>super-pom</artifactId>
-    <version>master-SNAPSHOT</version>
+    <version>java8-old-payara5</version>
     <relativePath></relativePath>
   </parent>
+
+  <repositories>
+    <repository>
+      <id>mavenrepo.dbc.dk</id>
+      <url>https://mavenrepo.dbc.dk/nexus/content/groups/public</url>
+    </repository>
+  </repositories>
 
   <dependencies>
     <dependency>
