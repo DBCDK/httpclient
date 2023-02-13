@@ -45,7 +45,7 @@ pipeline {
         stage("upload") {
             steps {
                 script {
-                    if ("${env.BRANCH_NAME}" == 'master' || "${env.BRANCH_NAME}" == 'DBI-55-payara6') {
+                    if ("${env.BRANCH_NAME}" == 'master') {
                         sh """
                             mvn -Dmaven.repo.local=\$WORKSPACE/.repo jar:jar deploy:deploy
                         """
