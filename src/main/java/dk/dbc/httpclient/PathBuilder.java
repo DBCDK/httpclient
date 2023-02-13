@@ -1,11 +1,4 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
- */
-
 package dk.dbc.httpclient;
-
-import dk.dbc.invariant.InvariantUtil;
 
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
@@ -28,7 +21,10 @@ public class PathBuilder {
      * @throws NullPointerException if given null-valued argument
      */
     public PathBuilder(String pathTemplate) throws NullPointerException {
-        this.pathTemplate = InvariantUtil.checkNotNullOrThrow(pathTemplate, "pathTemplate");
+        if (pathTemplate == null) {
+            throw new NullPointerException("pathTemplate can not be null");
+        }
+        this.pathTemplate = pathTemplate;
         variables = new HashMap<>();
     }
 

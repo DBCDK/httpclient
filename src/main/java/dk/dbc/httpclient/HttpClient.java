@@ -1,21 +1,15 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
- */
-
 package dk.dbc.httpclient;
 
-import dk.dbc.invariant.InvariantUtil;
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.client.ClientBuilder;
+import jakarta.ws.rs.client.Entity;
+import jakarta.ws.rs.client.Invocation;
+import jakarta.ws.rs.client.WebTarget;
+import jakarta.ws.rs.core.MediaType;
+import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.client.ClientConfig;
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Entity;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.MediaType;
-import javax.ws.rs.core.Response;
 import java.net.InetAddress;
 import java.net.MalformedURLException;
 import java.net.URL;
@@ -133,7 +127,10 @@ public class HttpClient {
     }
 
     HttpClient(Client client) throws NullPointerException {
-        this.client = InvariantUtil.checkNotNullOrThrow(client, "client");
+        if (client == null) {
+            throw new NullPointerException("client can not be null");
+        }
+        this.client = client;
     }
 
     public Response execute(HttpRequest<? extends HttpRequest> request) {

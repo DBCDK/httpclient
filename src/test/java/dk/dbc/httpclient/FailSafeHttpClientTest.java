@@ -1,26 +1,21 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
- */
-
 package dk.dbc.httpclient;
 
+import jakarta.ws.rs.ProcessingException;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.Response;
 import net.jodah.failsafe.RetryPolicy;
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 
-import javax.ws.rs.ProcessingException;
-import javax.ws.rs.client.Client;
-import javax.ws.rs.core.Response;
 import java.time.Duration;
 
-import static dk.dbc.commons.testutil.Assert.assertThat;
-import static dk.dbc.commons.testutil.Assert.isThrowing;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.times;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class FailSafeHttpClientTest {
+    
     @Test
     public void retriesIfPolicyDictatesIt() {
         final int numberOfRetries = 3;
@@ -38,7 +33,7 @@ public class FailSafeHttpClientTest {
         final HttpGet httpGet = new HttpGet(failSafeHttpClient)
                 .withBaseUrl(baseurl);
 
-        assertThat(() -> failSafeHttpClient.execute(httpGet), isThrowing(ProcessingException.class));
+        assertThrows(ProcessingException.class, () -> failSafeHttpClient.execute(httpGet));
 
         verify(client, times(numberOfRetries + 1)).target(baseurl);
     }

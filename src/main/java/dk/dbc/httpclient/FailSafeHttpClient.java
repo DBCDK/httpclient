@@ -1,16 +1,9 @@
-/*
- * Copyright Dansk Bibliotekscenter a/s. Licensed under GPLv3
- * See license text in LICENSE.txt or at https://opensource.dbc.dk/licenses/gpl-3.0/
- */
-
 package dk.dbc.httpclient;
 
-import dk.dbc.invariant.InvariantUtil;
+import jakarta.ws.rs.client.Client;
+import jakarta.ws.rs.core.Response;
 import net.jodah.failsafe.Failsafe;
 import net.jodah.failsafe.RetryPolicy;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.core.Response;
 
 /**
  * Class for executing HTTP requests in a fail safe manner with automatic retry functionality
@@ -52,7 +45,10 @@ public class FailSafeHttpClient extends HttpClient {
     private FailSafeHttpClient(Client client, RetryPolicy<Response> retryPolicy, boolean overrideOnRetry)
             throws NullPointerException {
         super(client);
-        this.retryPolicy = InvariantUtil.checkNotNullOrThrow(retryPolicy, "retryPolicy");
+        if (retryPolicy == null) {
+            throw new NullPointerException("retryPolicy can not be null");
+        }
+        this.retryPolicy = retryPolicy;
         if (overrideOnRetry) {
             this.retryPolicy.onRetry(response -> {
                 if (response != null && response.getLastResult() != null) response.getLastResult().close();

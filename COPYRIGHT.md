@@ -1,0 +1,1 @@
+Copyright © 2018-2023 [DBC Digital A/S](http://www.dbc.dk).
