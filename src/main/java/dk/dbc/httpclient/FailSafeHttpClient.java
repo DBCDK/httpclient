@@ -57,7 +57,32 @@ public class FailSafeHttpClient extends HttpClient {
     }
 
     @Override
-    public Response execute(HttpRequest<? extends HttpRequest> request) {
+    public Response execute(HttpRequest<? extends HttpRequest<?>> request) {
         return Failsafe.with(retryPolicy).get(() -> super.execute(request));
+    }
+
+    @Override
+    public Response executeAndExpect(HttpRequest<? extends HttpRequest<?>> request, Response.Status expectedStatus) {
+        return Failsafe.with(retryPolicy).get(() -> super.executeAndExpect(request, expectedStatus));
+    }
+
+    @Override
+    public Response executeAndExpect(HttpRequest<? extends HttpRequest<?>> request) {
+        return executeAndExpect(request, Response.Status.OK);
+    }
+
+    @Override
+    public <T> T executeAndExpect(HttpRequest<? extends HttpRequest<?>> request, Response.Status expectedStatus, Class<T> entityClass) {
+        final Response response = Failsafe.with(retryPolicy).get(() -> super.executeAndExpect(request, expectedStatus));
+        try {
+            return response.readEntity(entityClass);
+        } finally {
+            response.close();
+        }
+    }
+
+    @Override
+    public <T> T executeAndExpect(HttpRequest<? extends HttpRequest<?>> request, Class<T> entityClass) {
+        return executeAndExpect(request, Response.Status.OK, entityClass);
     }
 }
