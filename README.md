@@ -13,7 +13,7 @@ Add the dependency to your Maven pom.xml
 <dependency>
   <groupId>dk.dbc</groupId>
   <artifactId>dbc-commons-httpclient</artifactId>
-  <version>2.0-SNAPSHOT</version>
+  <version>3.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -34,11 +34,32 @@ try (final Response response = new HttpGet(httpClient)
             .withBaseUrl("http://somehost:someport")
             .withPathElements("path", "to", "resource")
             .withQueryParameter("key", "value")
-            .withHeader("Accept", "text/html")
+            .withHeader("Accept", "application/json")
             .execute()) {
 
     // do something with the response...
 }
+
+// or
+
+try (final Response response = new HttpGet(httpClient)
+            .withBaseUrl("http://somehost:someport")
+            .withPathElements("path", "to", "resource")
+            .withQueryParameter("key", "value")
+            .withHeader("Accept", "application/json")
+            .executeAndExpect(Response.Status.NO_CONTENT)) {
+
+    // do something with the response...
+}
+
+// or
+
+MyEntity entity = new HttpGet(httpClient)
+            .withBaseUrl("http://somehost:someport")
+            .withPathElements("path", "to", "resource")
+            .withQueryParameter("key", "value")
+            .withHeader("Accept", "application/json")
+            .executeAndExpect(MyEntity.class);
 ```
 
 POST requests:
@@ -130,5 +151,5 @@ To build this project JDK 11 or higher and Apache Maven are required.
 
 ### License
                                              
-Copyright © 2018-2023 [DBC Digital A/S](http://www.dbc.dk)
+Copyright © 2018-2024 [DBC Digital A/S](http://www.dbc.dk)
 See license text in LICENSE.txt

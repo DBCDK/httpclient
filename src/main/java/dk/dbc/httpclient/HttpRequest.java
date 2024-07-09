@@ -26,6 +26,22 @@ public abstract class HttpRequest<T extends HttpRequest<T>> implements Callable<
         return httpClient.execute(this);
     }
 
+    public Response executeAndExpect(Response.Status expectedStatus) {
+        return httpClient.executeAndExpect(this, expectedStatus);
+    }
+
+    public Response executeAndExpect() {
+        return executeAndExpect(Response.Status.OK);
+    }
+
+    public <U> U executeAndExpect(Response.Status expectedStatus, Class<U> entityClass) {
+        return httpClient.executeAndExpect(this, expectedStatus, entityClass);
+    }
+
+    public <U> U executeAndExpect(Class<U> entityClass) {
+        return executeAndExpect(Response.Status.OK, entityClass);
+    }
+
     public Map<String, String> getHeaders() {
         return headers;
     }

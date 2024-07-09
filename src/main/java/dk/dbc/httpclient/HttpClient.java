@@ -3,18 +3,11 @@ package dk.dbc.httpclient;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
-import jakarta.ws.rs.client.Entity;
 import jakarta.ws.rs.client.Invocation;
 import jakarta.ws.rs.client.WebTarget;
-import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
 import org.glassfish.jersey.client.ClientConfig;
 
-import java.net.InetAddress;
-import java.net.MalformedURLException;
-import java.net.URL;
-import java.net.UnknownHostException;
-import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -25,24 +18,6 @@ public class HttpClient {
 
     public static HttpClient create(Client client) throws NullPointerException {
         return new HttpClient(client);
-    }
-
-    public static InetAddress getRemoteHostAddress(String url) {
-        try {
-            return InetAddress.getByName(new URL(url).getHost());
-            // DO NOT merge these into a single multi catch as it causes
-            // java.lang.VerifyError: Stack map does not match the one at exception handler
-            // when running the tests in the gui module
-        } catch (MalformedURLException e) {
-            // unable to get remote host address;
-            return null;
-        } catch (UnknownHostException e) {
-            // unable to get remote host address;
-            return null;
-        } catch (RuntimeException e) {
-            // unable to get remote host address;
-            return null;
-        }
     }
 
     /**
@@ -117,7 +92,6 @@ public class HttpClient {
 
     /**
      * Closes given client instance thereby releasing all resources held
-     *
      * @param client web resource client (can be null)
      */
     public static void closeClient(Client client) {
@@ -133,7 +107,12 @@ public class HttpClient {
         this.client = client;
     }
 
-    public Response execute(HttpRequest<? extends HttpRequest> request) {
+    /**
+     * Executes given HTTP request
+     * @param request request
+     * @return server response
+     */
+    public Response execute(HttpRequest<? extends HttpRequest<?>> request) {
         try {
             return request.call();
         } catch (Exception e) {
@@ -143,6 +122,67 @@ public class HttpClient {
                 throw (ProcessingException) e;
             }
         }
+    }
+
+    /**
+     * Executes given HTTP request and expects a specific status code
+     * @param request request
+     * @param expectedStatus expected status code
+     * @return server response
+     * @throws UnexpectedStatusCodeException if the actual status code differs from the expected one, be advised
+     * that the attached response must be closed to avoid resource leaks
+     */
+    public Response executeAndExpect(HttpRequest<? extends HttpRequest<?>> request, Response.Status expectedStatus)
+            throws UnexpectedStatusCodeException {
+        Response response = execute(request);
+        if (response.getStatus() != expectedStatus.getStatusCode()) {
+            throw new UnexpectedStatusCodeException(Response.Status.fromStatusCode(response.getStatus()), response);
+        }
+        return response;
+    }
+
+    /**
+     * Executes given HTTP request and expects a 200 OK status code
+     * @param request request
+     * @return server response
+     * @throws UnexpectedStatusCodeException if the actual status code differs from 200, be advised that the attached
+     * response must be closed to avoid resource leaks
+     */
+    public Response executeAndExpect(HttpRequest<? extends HttpRequest<?>> request) {
+        return executeAndExpect(request, Response.Status.OK);
+    }
+
+    /**
+     * Executes given HTTP request and expects a specific status code and to be able to read an entity of a specific type
+     * @param request request
+     * @param expectedStatus expected status code
+     * @param entityClass entity class
+     * @param <T> entity type
+     * @return entity
+     * @throws UnexpectedStatusCodeException if the actual status code differs from the expected one, be advised
+     * that the attached response must be closed to avoid resource leaks
+     */
+    public <T> T executeAndExpect(HttpRequest<? extends HttpRequest<?>> request, Response.Status expectedStatus, Class<T> entityClass)
+            throws UnexpectedStatusCodeException {
+        final Response response = executeAndExpect(request, expectedStatus);
+        try {
+            return response.readEntity(entityClass);
+        } finally {
+            response.close();
+        }
+    }
+
+    /**
+     * Executes given HTTP request and expects a 200 OK status code and to be able to read an entity of a specific type
+     * @param request request
+     * @param entityClass entity class
+     * @param <T> entity type
+     * @return entity
+     * @throws UnexpectedStatusCodeException if the actual status code differs from 200, be advised that the attached
+     * response must be closed to avoid resource leaks
+     */
+    public <T> T executeAndExpect(HttpRequest<? extends HttpRequest<?>> request, Class<T> entityClass) {
+        return executeAndExpect(request, Response.Status.OK, entityClass);
     }
 
     public Client getClient() {
@@ -167,167 +207,5 @@ public class HttpClient {
             target = target.queryParam(queryParameter.getKey(), queryParameter.getValue());
         }
         return target;
-    }
-
-    // Old util methods - will be deprecated in the near future
-
-    private final static Map<String, String> NO_HEADERS = null;
-
-    private static boolean headerExists(Map<String, String> headers) {
-        return headers != NO_HEADERS;
-    }
-
-    /**
-     * Issues HTTP GET request to endpoint constructed using given baseurl and path elements
-     *
-     * @param client web resource client
-     * @param queryParameters query parameters to be added to request
-     * @param baseUrl base URL on the form http(s)://host:port/path
-     * @param pathElements additional path elements to be added to base URL
-     *
-     * @return server response
-     */
-    public static Response doGet(Client client, Map<String, Object> queryParameters, String baseUrl, String... pathElements)  {
-
-        WebTarget target = client.target(baseUrl);
-
-        target = setPathParametersOnWebTarget(pathElements, target);
-
-        target = setQueryParametersOnWebTarget(queryParameters, target);
-
-        return target.request().get();
-    }
-
-    /**
-     * Issues HTTP GET request to endpoint constructed using given baseurl and path elements
-     *
-     * @param client web resource client
-     * @param baseUrl base URL on the form http(s)://host:port/path
-     * @param pathElements additional path elements to be added to base URL
-     *
-     * @return server response
-     */
-    public static Response doGet(Client client, String baseUrl, String... pathElements)  {
-        return doGet(client, new HashMap<String, Object>(), baseUrl, pathElements);
-    }
-
-    /**
-     * HTTP POSTs given data entity to endpoint constructed using given queryParameters, headers, baseurl and path elements
-     *
-     * @param client web resource client
-     * @param queryParameters the query parameters
-     * @param headers HTTP headers
-     * @param data data entity
-     * @param baseUrl base URL on the form http(s)://host:port/path
-     * @param pathElements additional path elements to be added to base URL
-     *
-     * @return server response
-     */
-    public static Response doPost(Client client, Map<String, Object> queryParameters, Map<String, String> headers, Entity data, String baseUrl, String... pathElements) {
-
-        WebTarget target = client.target(baseUrl);
-
-        target = setPathParametersOnWebTarget(pathElements, target);
-
-        target = setQueryParametersOnWebTarget(queryParameters, target);
-
-        Invocation.Builder request = target.request();
-
-        if (headerExists(headers)) {
-            setHeadersOnRequest(headers, request);
-        }
-
-        return request.post(data);
-    }
-
-    /**
-     * HTTP POSTs given data entity to endpoint constructed using given headers, baseurl and path elements
-     *
-     * @param client web resource client
-     * @param headers HTTP headers
-     * @param data data entity
-     * @param baseUrl base URL on the form http(s)://host:port/path
-     * @param pathElements additional path elements to be added to base URL
-     *
-     * @return server response
-     */
-    public static Response doPost(Client client, Map<String, String> headers, Entity data, String baseUrl, String... pathElements) {
-
-        WebTarget target = client.target(baseUrl);
-
-        target = setPathParametersOnWebTarget(pathElements, target);
-
-        Invocation.Builder request = target.request();
-
-        if (headerExists(headers)) {
-            setHeadersOnRequest(headers, request);
-        }
-
-        return request.post(data);
-    }
-
-    /**
-     * HTTP POSTs given data as application/json to endpoint constructed using given headers, baseurl and path elements
-     *
-     * @param client web resource client
-     * @param headers HTTP headers
-     * @param data JSON data
-     * @param baseUrl base URL on the form http(s)://host:port/path
-     * @param pathElements additional path elements to be added to base URL
-     *
-     * @return server response
-     */
-    public static Response doPostWithJson(Client client, Map<String, String> headers, String data, String baseUrl, String... pathElements) {
-        return doPost(client, headers, Entity.entity(data, MediaType.APPLICATION_JSON), baseUrl, pathElements);
-    }
-    public static <T> Response doPostWithJson(Client client, Map<String, String> headers, T data, String baseUrl, String... pathElements) {
-        return doPost(client, headers, Entity.entity(data, MediaType.APPLICATION_JSON), baseUrl, pathElements);
-    }
-    public static Response doPostWithJson(Client client, String data, String baseUrl, String... pathElements) {
-        return doPost(client, NO_HEADERS, Entity.entity(data, MediaType.APPLICATION_JSON), baseUrl, pathElements);
-    }
-    public static <T> Response doPostWithJson(Client client, T data, String baseUrl, String... pathElements) {
-        return doPost(client, NO_HEADERS,  Entity.entity(data, MediaType.APPLICATION_JSON), baseUrl, pathElements);
-    }
-    public static <T> Response doPostWithJson(Client client, Map<String, Object> queryParameters, Map<String, String> headers, T data, String baseUrl, String... pathElements) {
-        return doPost(client, queryParameters, headers, Entity.entity(data, MediaType.APPLICATION_JSON), baseUrl, pathElements);
-    }
-
-    /**
-     * Issues HTTP DELETE request to endpoint constructed using given baseurl and path elements
-     *
-     * @param client web resource client
-     * @param baseUrl base URL on the form http(s)://host:port/path
-     * @param pathElements additional path elements to be added to base URL
-     *
-     * @return server response
-     */
-    public static Response doDelete(Client client, String baseUrl, String... pathElements) {
-        return doDelete(client, NO_HEADERS, baseUrl, pathElements);
-    }
-
-    /**
-     * Issues HTTP DELETE request to endpoint constructed using given baseurl and path elements
-     *
-     * @param client web resource client
-     * @param headers HTTP headers
-     * @param baseUrl base URL on the form http(s)://host:port/path
-     * @param pathElements additional path elements to be added to base URL
-     *
-     * @return server response
-     */
-    public static Response doDelete(Client client, Map<String, String> headers, String baseUrl, String... pathElements) {
-
-        WebTarget target = client.target(baseUrl);
-
-        target = setPathParametersOnWebTarget(pathElements, target);
-
-        Invocation.Builder request = target.request();
-
-        if (headerExists(headers)) {
-            setHeadersOnRequest(headers, request);
-        }
-
-        return request.delete();
     }
 }
