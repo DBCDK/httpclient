@@ -1,10 +1,12 @@
 package dk.dbc.httpclient;
 
 import jakarta.ws.rs.core.Response;
+
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Callable;
+import java.util.stream.Stream;
 
 /**
  * Base class for HTTP requests
@@ -66,6 +68,11 @@ public abstract class HttpRequest<T extends HttpRequest<T>> implements Callable<
 
     public T withBaseUrl(String baseUrl) {
         this.baseUrl = baseUrl;
+        return (T) this;
+    }
+
+    public T withCompression(Decompressor... decompressors) {
+        Stream.of(decompressors).distinct().forEach(d -> headers.put("Accept-Encoding", d.toString()));
         return (T) this;
     }
 
