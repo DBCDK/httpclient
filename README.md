@@ -13,7 +13,7 @@ Add the dependency to your Maven pom.xml
 <dependency>
   <groupId>dk.dbc</groupId>
   <artifactId>dbc-commons-httpclient</artifactId>
-  <version>3.0-SNAPSHOT</version>
+  <version>4.0-SNAPSHOT</version>
 </dependency>
 ```
 
@@ -103,6 +103,31 @@ try (final Response response = new HttpDelete(httpClient)
 }
 ```
 
+HEAD requests:
+
+```java
+try (final Response response = new HttpHead(httpClient)
+            .withBaseUrl("http://somehost:someport")
+            .withPathElements("path", "to", "resource", "id")
+            .execute()) {
+
+    // do something with the response...
+}
+```
+
+OPTIONS requests:
+
+```java
+try (final Response response = new HttpOptions(httpClient)
+            .withBaseUrl("http://somehost:someport")
+            .withPathElements("path", "to", "resource", "id")
+            .execute()) {
+
+    // do something with the response...
+}
+```
+
+
 HTTP requests can also be executed in a fail-safe manner with automatic retry functionality.
 
 Note that the FailSafeHttpClient will forcibly override a RetryPolicy.onRetry() listener set by the client, 
@@ -143,11 +168,28 @@ try (final Response response = new HttpGet(httpClient)
 }
 ```
 
+### Compression
+The client supports Brotli and GZip (de)compression. While Brotli is the newest and fastest option GZip is the more widespread.
+Http compression works by the client suggesting which algorithmens it can decode, with the "Accept-Encoding" header, 
+and the server then specifies its choice with the "Content-Encoding" header. 
+If you enable encoding the client will decompress the body automatically.
+
+```java
+httpClient.enableCompression();
+MyEntity entity = new HttpGet(httpClient)
+            .withBaseUrl("http://somehost:someport")
+            .withPathElements("path", "to", "resource")
+            .withQueryParameter("key", "value")
+            .withHeader("Accept", "application/json")
+            .withCompression(Decompressor.BR, Decompressor.GZIP)
+            .executeAndExpect(MyEntity.class);
+```
+
 ### development
 
 **Requirements**
 
-To build this project JDK 11 or higher and Apache Maven are required.
+To build this project JDK 17 or higher and Apache Maven are required.
 
 ### License
                                              
