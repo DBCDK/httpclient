@@ -16,6 +16,10 @@ import java.util.Map;
 public class HttpClient {
     protected final Client client;
 
+    public static HttpClient create() {
+        return create(newClient());
+    }
+
     public static HttpClient create(Client client) throws NullPointerException {
         return new HttpClient(client);
     }
@@ -26,12 +30,28 @@ public class HttpClient {
      * @return server response
      */
     public static Response doGet(HttpGet httpGet) {
-        WebTarget target = httpGet.getHttpClient().getClient().target(httpGet.getBaseUrl());
-        target = setPathParametersOnWebTarget(httpGet.getPathElements(), target);
-        target = setQueryParametersOnWebTarget(httpGet.queryParameters, target);
-        Invocation.Builder request = target.request();
-        setHeadersOnRequest(httpGet.getHeaders(), request);
+        Invocation.Builder request = configureRequest(httpGet);
         return request.get();
+    }
+
+    /**
+     * Executes given HTTP HEAD request
+     * @param httpHead request
+     * @return server response
+     */
+    public static Response doHead(HttpHead httpHead) {
+        Invocation.Builder request = configureRequest(httpHead);
+        return request.head();
+    }
+
+    /**
+     * Executes given HTTP OPTIONS request
+     * @param httpHead request
+     * @return server response
+     */
+    public static Response doOptions(HttpOptions httpHead) {
+        Invocation.Builder request = configureRequest(httpHead);
+        return request.options();
     }
 
     /**
@@ -40,11 +60,7 @@ public class HttpClient {
      * @return server response
      */
     public static Response doPost(HttpPost httpPost) {
-        WebTarget target = httpPost.getHttpClient().getClient().target(httpPost.getBaseUrl());
-        target = setPathParametersOnWebTarget(httpPost.getPathElements(), target);
-        target = setQueryParametersOnWebTarget(httpPost.getQueryParameters(), target);
-        Invocation.Builder request = target.request();
-        setHeadersOnRequest(httpPost.getHeaders(), request);
+        Invocation.Builder request = configureRequest(httpPost);
         return request.post(httpPost.getEntity());
     }
 
@@ -54,11 +70,7 @@ public class HttpClient {
      * @return server response
      */
     public static Response doPut(HttpPut httpPut) {
-        WebTarget target = httpPut.getHttpClient().getClient().target(httpPut.getBaseUrl());
-        target = setPathParametersOnWebTarget(httpPut.getPathElements(), target);
-        target = setQueryParametersOnWebTarget(httpPut.getQueryParameters(), target);
-        Invocation.Builder request = target.request();
-        setHeadersOnRequest(httpPut.getHeaders(), request);
+        Invocation.Builder request = configureRequest(httpPut);
         return request.put(httpPut.getEntity());
     }
 
@@ -68,10 +80,7 @@ public class HttpClient {
      * @return server response
      */
     public static Response doDelete(HttpDelete httpDelete) {
-        WebTarget target = httpDelete.getHttpClient().client.target(httpDelete.getBaseUrl());
-        target = setPathParametersOnWebTarget(httpDelete.getPathElements(), target);
-        Invocation.Builder request = target.request();
-        setHeadersOnRequest(httpDelete.getHeaders(), request);
+        Invocation.Builder request = configureRequest(httpDelete);
         return request.delete();
     }
 
@@ -105,6 +114,11 @@ public class HttpClient {
             throw new NullPointerException("client can not be null");
         }
         this.client = client;
+    }
+
+    public HttpClient enableCompression() {
+        client.register(DecompressionInterceptor.class);
+        return this;
     }
 
     /**
@@ -207,5 +221,14 @@ public class HttpClient {
             target = target.queryParam(queryParameter.getKey(), queryParameter.getValue());
         }
         return target;
+    }
+
+    private static Invocation.Builder configureRequest(HttpRequest<?> httpRequest) {
+        WebTarget target = httpRequest.getHttpClient().getClient().target(httpRequest.getBaseUrl());
+        target = setPathParametersOnWebTarget(httpRequest.getPathElements(), target);
+        target = setQueryParametersOnWebTarget(httpRequest.queryParameters, target);
+        Invocation.Builder request = target.request();
+        setHeadersOnRequest(httpRequest.getHeaders(), request);
+        return request;
     }
 }

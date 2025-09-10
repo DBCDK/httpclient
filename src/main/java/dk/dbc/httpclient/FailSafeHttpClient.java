@@ -82,6 +82,12 @@ public class FailSafeHttpClient extends HttpClient {
     }
 
     @Override
+    public FailSafeHttpClient enableCompression() {
+        super.enableCompression();
+        return this;
+    }
+
+    @Override
     public <T> T executeAndExpect(HttpRequest<? extends HttpRequest<?>> request, Class<T> entityClass) {
         return executeAndExpect(request, Response.Status.OK, entityClass);
     }
