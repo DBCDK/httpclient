@@ -1,5 +1,5 @@
-def ownerEmail = "Meta-scrum@dbc.dk"
-def ownerSlack = "meta-notifications"
+def ownerEmail = "de-team@dbc.dk"
+def ownerSlack = "de-notifications"
 
 pipeline {
     agent { label "devel11" }
