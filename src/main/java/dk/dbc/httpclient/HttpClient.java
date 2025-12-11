@@ -1,5 +1,6 @@
 package dk.dbc.httpclient;
 
+import dk.dbc.commons.useragent.UserAgent;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.client.ClientBuilder;
@@ -16,12 +17,25 @@ import java.util.Map;
 public class HttpClient {
     protected final Client client;
 
-    public static HttpClient create() {
-        return create(newClient());
+    private final UserAgent userAgent;
+
+    /**
+     * Creates new HTTP client with default configuration
+     * @param userAgent user agent to be used in requests
+     * @return new HTTP client
+     */
+    public static HttpClient create(UserAgent userAgent) {
+        return create(newClient(), userAgent);
     }
 
-    public static HttpClient create(Client client) throws NullPointerException {
-        return new HttpClient(client);
+    /**
+     * Creates new HTTP client with given configuration
+     * @param client web resources client
+     * @param userAgent user agent to be used in requests
+     * @return new HTTP client
+     */
+    public static HttpClient create(Client client, UserAgent userAgent) throws NullPointerException {
+        return new HttpClient(client, userAgent);
     }
 
     /**
@@ -109,11 +123,19 @@ public class HttpClient {
         }
     }
 
-    HttpClient(Client client) throws NullPointerException {
+    HttpClient(Client client, UserAgent userAgent) throws NullPointerException {
         if (client == null) {
             throw new NullPointerException("client can not be null");
         }
         this.client = client;
+        if (userAgent == null) {
+            throw new NullPointerException("userAgent can not be null");
+        }
+        this.userAgent = userAgent;
+    }
+
+    public UserAgent getUserAgent() {
+        return userAgent;
     }
 
     public HttpClient enableCompression() {

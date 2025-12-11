@@ -1,5 +1,6 @@
 package dk.dbc.httpclient;
 
+import dk.dbc.commons.useragent.UserAgent;
 import jakarta.ws.rs.ProcessingException;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.Response;
@@ -15,7 +16,9 @@ import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 public class FailSafeHttpClientTest {
-    
+
+    private static final UserAgent USER_AGENT = new UserAgent("FailSafeHttpClientTest");
+
     @Test
     public void retriesIfPolicyDictatesIt() {
         final int numberOfRetries = 3;
@@ -29,7 +32,7 @@ public class FailSafeHttpClientTest {
                 .withDelay(Duration.ofMillis(1))
                 .withMaxRetries(numberOfRetries);
 
-        final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, retryPolicy);
+        final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, USER_AGENT, retryPolicy);
         final HttpGet httpGet = new HttpGet(failSafeHttpClient)
                 .withBaseUrl(baseurl);
 

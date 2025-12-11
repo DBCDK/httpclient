@@ -13,18 +13,22 @@ Add the dependency to your Maven pom.xml
 <dependency>
   <groupId>dk.dbc</groupId>
   <artifactId>dbc-commons-httpclient</artifactId>
-  <version>4.0-SNAPSHOT</version>
+  <version>5.0-SNAPSHOT</version>
 </dependency>
 ```
 
-### usage
+### Usage
+
+Since version 5.0 the use of User-Agent headers is mandatory.
 
 In your Java code
 
 ```java
+import dk.dbc.commons.useragent.UserAgent;
 import dk.dbc.httpclient;
 
-HttpClient httpClient = HttpClient.create(HttpClient.newClient());
+UserAgent ua = UserAgent.forExternalRequests(); // alternatively UserAgent.forInternalRequests();
+HttpClient httpClient = HttpClient.create(HttpClient.newClient(), ua);
 ```
 
 GET requests:
@@ -127,20 +131,21 @@ try (final Response response = new HttpOptions(httpClient)
 }
 ```
 
-
 HTTP requests can also be executed in a fail-safe manner with automatic retry functionality.
 
 Note that the FailSafeHttpClient will forcibly override a RetryPolicy.onRetry() listener set by the client, 
 unless the three argument create() method is used with the overrideOnRetry flag set to false.
 
 ```java
+import dk.dbc.httpclient.FailSafeHttpClient;
+
 final RetryPolicy<Response> retryPolicy = new RetryPolicy<Response>()
         .handle(ProcessingException.class)
         .handleResultIf(response -> response.getStatus() == 404 || response.getStatus() == 500)
         .withDelay(Duration.ofSeconds(1))
         .withMaxRetries(3);
 
-final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(HttpClient.newClient(), retryPolicy);
+final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(HttpClient.newClient(), ua, retryPolicy);
 
 try (final Response response = new HttpGet(failSafeHttpClient)
             .withBaseUrl("http://somehost:someport")
@@ -185,13 +190,13 @@ MyEntity entity = new HttpGet(httpClient)
             .executeAndExpect(MyEntity.class);
 ```
 
-### development
+### Development
 
 **Requirements**
 
-To build this project JDK 17 or higher and Apache Maven are required.
+To build this project JDK 21 or higher and Apache Maven are required.
 
 ### License
                                              
-Copyright © 2018-2024 [DBC Digital A/S](http://www.dbc.dk)
+Copyright © 2018-2025 [DBC Digital A/S](http://www.dbc.dk)
 See license text in LICENSE.txt

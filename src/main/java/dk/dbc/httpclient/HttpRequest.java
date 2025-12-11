@@ -22,6 +22,7 @@ public abstract class HttpRequest<T extends HttpRequest<T>> implements Callable<
 
     public HttpRequest(HttpClient httpClient) {
         this.httpClient = httpClient;
+        this.headers.put("User-Agent", httpClient.getUserAgent().toString());
     }
 
     public Response execute() {
