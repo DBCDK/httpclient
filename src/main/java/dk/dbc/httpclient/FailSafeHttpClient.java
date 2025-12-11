@@ -1,5 +1,6 @@
 package dk.dbc.httpclient;
 
+import dk.dbc.commons.useragent.UserAgent;
 import jakarta.ws.rs.client.Client;
 import jakarta.ws.rs.core.Response;
 import net.jodah.failsafe.Failsafe;
@@ -14,13 +15,14 @@ import net.jodah.failsafe.RetryPolicy;
  * {@code
  *
  * final Client client = HttpClient.newClient();
+ * final UserAgent ua = UserAgent.forExternalRequests(); // alternatively UserAgent.forInternalRequests();
  * final RetryPolicy<Response> retryPolicy = new RetryPolicy<Response>()
  *          .handle(ProcessingException.class)
  *          .handleResultIf(response -> response.getStatus() == 404 || response.getStatus() == 500)
  *          .withDelay(Duration.ofSeconds(1))
  *          .withMaxRetries(3);
  *
- * final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, retryPolicy);
+ * final FailSafeHttpClient failSafeHttpClient = FailSafeHttpClient.create(client, ua, retryPolicy);
  * final HttpGet httpGet = failSafeHttpClient.createHttpGet()
  *          .withBaseUrl("http://localhost:8080")
  *          .withPathElements("path", "to", "resource");
@@ -33,18 +35,34 @@ import net.jodah.failsafe.RetryPolicy;
 public class FailSafeHttpClient extends HttpClient {
     private final RetryPolicy<Response> retryPolicy;
 
-    public static FailSafeHttpClient create(Client httpClient, RetryPolicy<Response> retryPolicy) throws NullPointerException {
-        return new FailSafeHttpClient(httpClient, retryPolicy, true);
+    /**
+     * Creates new instance of FailSafeHttpClient
+     * @param client web resources client
+     * @param userAgent user agent to be used in requests
+     * @param retryPolicy retry policy
+     * @return new instance of FailSafeHttpClient
+     */
+    public static FailSafeHttpClient create(Client client, UserAgent userAgent, RetryPolicy<Response> retryPolicy) throws NullPointerException {
+        return new FailSafeHttpClient(client, userAgent, retryPolicy, true);
     }
 
-    public static FailSafeHttpClient create(Client httpClient, RetryPolicy<Response> retryPolicy,
+    /**
+     * Creates new instance of FailSafeHttpClient
+     * @param client web resources client
+     * @param userAgent user agent to be used in requests
+     * @param retryPolicy retry policy
+     * @param overrideOnRetry controls whether to automatically close the previous HTTP response
+     *                        before a retry attempt is executed
+     * @return new instance of FailSafeHttpClient
+     */
+    public static FailSafeHttpClient create(Client client, UserAgent userAgent, RetryPolicy<Response> retryPolicy,
                                             boolean overrideOnRetry) throws NullPointerException {
-        return new FailSafeHttpClient(httpClient, retryPolicy, overrideOnRetry);
+        return new FailSafeHttpClient(client, userAgent, retryPolicy, overrideOnRetry);
     }
 
-    private FailSafeHttpClient(Client client, RetryPolicy<Response> retryPolicy, boolean overrideOnRetry)
+    private FailSafeHttpClient(Client client, UserAgent userAgent, RetryPolicy<Response> retryPolicy, boolean overrideOnRetry)
             throws NullPointerException {
-        super(client);
+        super(client, userAgent);
         if (retryPolicy == null) {
             throw new NullPointerException("retryPolicy can not be null");
         }
@@ -73,11 +91,8 @@ public class FailSafeHttpClient extends HttpClient {
 
     @Override
     public <T> T executeAndExpect(HttpRequest<? extends HttpRequest<?>> request, Response.Status expectedStatus, Class<T> entityClass) {
-        final Response response = Failsafe.with(retryPolicy).get(() -> super.executeAndExpect(request, expectedStatus));
-        try {
+        try (Response response = Failsafe.with(retryPolicy).get(() -> super.executeAndExpect(request, expectedStatus))) {
             return response.readEntity(entityClass);
-        } finally {
-            response.close();
         }
     }
 
