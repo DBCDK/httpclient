@@ -2,7 +2,7 @@ def ownerEmail = "de-team@dbc.dk"
 def ownerSlack = "de-notifications"
 
 pipeline {
-    agent { label "devel11" }
+    agent { label "devel12" }
     tools {
         maven "Maven 3"
     }
@@ -23,21 +23,38 @@ pipeline {
 
         stage("build") {
             steps {
-                sh """
-                    mvn -B -Dmaven.repo.local=$WORKSPACE/.repo --no-transfer-progress verify pmd:pmd pmd:cpd spotbugs:spotbugs javadoc:aggregate
-                """
-                script {
-                    junit testResults: '**/target/surefire-reports/TEST-*.xml'
+                withSonarQubeEnv(installationName: 'sonarqube.dbc.dk') {
+                    script {
+                        def status = sh returnStatus: true, script:  """
+                            rm -rf \$WORKSPACE/.repo/dk/dbc
+                            mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo --no-transfer-progress clean
+                            mvn -B -Dmaven.repo.local=\$WORKSPACE/.repo --no-transfer-progress verify
+                        """
 
-                    def java = scanForIssues tool: [$class: 'Java']
-                    def javadoc = scanForIssues tool: [$class: 'JavaDoc']
-                    publishIssues issues:[java, javadoc]
+                        def sonarOptions = "-Dsonar.branch.name=$BRANCH_NAME"
+                        if (env.BRANCH_NAME != 'master') {
+                            sonarOptions += " -Dsonar.newCode.referenceBranch=main"
+                        }
 
-                    def pmd = scanForIssues tool: [$class: 'Pmd']
-                    publishIssues issues:[pmd]
+                        status += sh returnStatus: true, script: """
+                            mvn -B -Dmaven.repo.local=$WORKSPACE/.repo --no-transfer-progress $sonarOptions sonar:sonar
+                        """
 
-                    def spotbugs = scanForIssues tool: [$class: 'SpotBugs']
-                    publishIssues issues:[spotbugs]
+                        junit testResults: '**/target/surefire-reports/TEST-*.xml'
+
+                        if (status != 0) {
+                            error("build failed")
+                        }
+                    }
+                }
+            }
+        }
+
+        stage("quality gate") {
+            steps {
+                // wait for analysis results
+                timeout(time: 1, unit: 'HOURS') {
+                    waitForQualityGate abortPipeline: true
                 }
             }
         }
