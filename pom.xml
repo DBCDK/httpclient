@@ -21,6 +21,10 @@
         </repository>
     </repositories>
 
+    <properties>
+        <sonar.projectKey>${project.artifactId}</sonar.projectKey>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>dk.dbc</groupId>
