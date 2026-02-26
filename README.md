@@ -13,7 +13,7 @@ Add the dependency to your Maven pom.xml
 <dependency>
   <groupId>dk.dbc</groupId>
   <artifactId>dbc-commons-httpclient</artifactId>
-  <version>5.0-SNAPSHOT</version>
+  <version>21.5.0-SNAPSHOT</version>
 </dependency>
 ```
 
